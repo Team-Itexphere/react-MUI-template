@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 
-import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import {
     Avatar,
     Box,
+    Button,
     Card,
     CardContent,
     Chip,
@@ -29,15 +30,20 @@ import {
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar';
+import decode from 'jwt-decode';
+import GoogleLogin from 'react-google-login';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
 import UpgradePlanCard from './UpgradePlanCard';
-import User1 from 'assets/images/users/user-round.svg';
+import AnimateButton from 'ui-component/extended/AnimateButton';
 
 // assets
 import { IconLogout, IconSearch, IconSettings, IconUser } from '@tabler/icons';
+
+// Redux
+import { loginAction } from 'store/actions/authentication/auth.action';
 
 // ==============================|| PROFILE MENU ||============================== //
 
@@ -45,18 +51,41 @@ const ProfileSection = () => {
     const theme = useTheme();
     const customization = useSelector((state) => state.customization);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const location = useLocation();
 
     const [sdm, setSdm] = useState(true);
     const [value, setValue] = useState('');
     const [notification, setNotification] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [open, setOpen] = useState(false);
+    const [user, setUser] = useState(JSON.parse(localStorage.getItem('profile')));
     /**
      * anchorRef is used on different componets and specifying one type leads to other components throwing an error
      * */
+
+    useEffect(() => {
+        const token = user?.token;
+
+        if (token) {
+            const decodedToken = decode(token);
+
+            if (decodedToken.exp * 1000 < new Date().getTime()) handleLogout();
+        }
+
+        setUser(JSON.parse(localStorage.getItem('profile')))
+    }, [location]);
+
     const anchorRef = useRef(null);
     const handleLogout = async () => {
-        console.log('Logout');
+        dispatch({ type: 'LOGOUT' });
+
+        // window.location.reload();
+        setUser(null);
+
+        setOpen(false);
+
+        // navigate('/');
     };
 
     const handleClose = (event) => {
@@ -79,58 +108,99 @@ const ProfileSection = () => {
     };
 
     const prevOpen = useRef(open);
-    useEffect(() => {
-        if (prevOpen.current === true && open === false) {
-            anchorRef.current.focus();
-        }
+    // useEffect(() => {
+    //     if (prevOpen.current === true && open === false) {
+    //         anchorRef.current.focus();
+    //     }
 
-        prevOpen.current = open;
-    }, [open]);
+    //     prevOpen.current = open;
+    // }, [open]);
+
+    const googleSuccess = async (res) => {
+        dispatch(loginAction(res.tokenId, navigate))
+
+    };
+
+    const googleFailure = () => {
+        alert('Google Sign In was unsuccessfull. Send from FE.');
+        // console.log('Google Sign In was unsuccessfull. Send from FE. Try  Again Later ');
+    };
 
     return (
         <>
-            {/* <Chip
-                sx={{
-                    height: '48px',
-                    alignItems: 'center',
-                    borderRadius: '27px',
-                    transition: 'all .2s ease-in-out',
-                    borderColor: theme.palette.primary.light,
-                    backgroundColor: theme.palette.primary.light,
-                    '&[aria-controls="menu-list-grow"], &:hover': {
-                        borderColor: theme.palette.primary.main,
-                        background: `${theme.palette.primary.main}!important`,
-                        color: theme.palette.primary.light,
-                        '& svg': {
-                            stroke: theme.palette.primary.light
+            {user ?
+                <Chip
+                    sx={{
+                        height: '48px',
+                        alignItems: 'center',
+                        borderRadius: '27px',
+                        transition: 'all .2s ease-in-out',
+                        borderColor: theme.palette.primary.light,
+                        backgroundColor: theme.palette.primary.light,
+                        '&[aria-controls="menu-list-grow"], &:hover': {
+                            borderColor: theme.palette.primary.main,
+                            background: `${theme.palette.primary.main}!important`,
+                            color: theme.palette.primary.light,
+                            '& svg': {
+                                stroke: theme.palette.primary.light
+                            }
+                        },
+                        '& .MuiChip-label': {
+                            lineHeight: 0
                         }
-                    },
-                    '& .MuiChip-label': {
-                        lineHeight: 0
+                    }}
+                    icon={
+                        <Avatar
+                            src={user?.user?.picture}
+                            alt={user?.user?.name}
+                            sx={{
+                                ...theme.typography.mediumAvatar,
+                                margin: '8px 0 8px 8px !important',
+                                cursor: 'pointer'
+                            }}
+                            ref={anchorRef}
+                            aria-controls={open ? 'menu-list-grow' : undefined}
+                            aria-haspopup="true"
+                            color="inherit"
+                        />
                     }
-                }}
-                icon={
-                    <Avatar
-                        src={User1}
-                        sx={{
-                            ...theme.typography.mediumAvatar,
-                            margin: '8px 0 8px 8px !important',
-                            cursor: 'pointer'
-                        }}
-                        ref={anchorRef}
-                        aria-controls={open ? 'menu-list-grow' : undefined}
-                        aria-haspopup="true"
-                        color="inherit"
-                    />
-                }
-                label={<IconSettings stroke={1.5} size="1.5rem" color={theme.palette.primary.main} />}
-                variant="outlined"
-                ref={anchorRef}
-                aria-controls={open ? 'menu-list-grow' : undefined}
-                aria-haspopup="true"
-                onClick={handleToggle}
-                color="primary"
-            /> */}
+                    label={<IconSettings stroke={1.5} size="1.5rem" color={theme.palette.primary.main} />}
+                    variant="outlined"
+                    ref={anchorRef}
+                    aria-controls={open ? 'menu-list-grow' : undefined}
+                    aria-haspopup="true"
+                    onClick={handleToggle}
+                    color="primary"
+                />
+                : 
+                <AnimateButton>
+                    <GoogleLogin
+                            clientId="988836340451-pqpi4evnl7qut2h2b647p5rttkjrqbg0.apps.googleusercontent.com"
+                            render={renderProps => (
+                                <Button
+                                    variant="outlined"
+                                    fullWidth
+                                    size="large"
+                                    sx={{
+                                        color: 'grey.700',
+                                        backgroundColor: theme.palette.primary.light,
+                                        borderColor: theme.palette.grey[100]
+                                    }}
+                                    onClick={renderProps.onClick} disabled={renderProps.disabled}
+                                >
+                                    {/* <Box sx={{ mr: { xs: 1, sm: 2, width: 20 } }}>
+                                        <img src={Google} alt="google" width={16} height={20} style={{ marginRight: matchDownSM ? 8 : 16, paddingTop: 5 }} />
+                                    </Box> */}
+                                    Sign In
+                                </Button>
+                            )}
+                            buttonText="Login"
+                            onSuccess={googleSuccess}
+                            onFailure={googleFailure}
+                        />
+                </AnimateButton>
+            }
+
             <Popper
                 placement="bottom-end"
                 open={open}
@@ -159,7 +229,7 @@ const ProfileSection = () => {
                                             <Stack direction="row" spacing={0.5} alignItems="center">
                                                 <Typography variant="h4">Good Morning,</Typography>
                                                 <Typography component="span" variant="h4" sx={{ fontWeight: 400 }}>
-                                                    Johne Doe
+                                                {user?.user?.name}
                                                 </Typography>
                                             </Stack>
                                             <Typography variant="subtitle2">Project Admin</Typography>
