@@ -5,7 +5,11 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 
 // dashboard routing
-const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const Home = Loadable(lazy(() => import('views/home/home.screen')));
+const AdminDashboard = Loadable(lazy(() => import('views/admin-dashboard')));
+const UserDetails = Loadable(lazy(() => import('views/admin-dashboard/users-details/UserDetails')));
+const AboutUs = Loadable(lazy(() => import('ui-component/footer/footer-components/about-us/AboutUs')));
+const FourOhFour = Loadable(lazy(() => import('views/utilities/404')));
 
 // utilities routing
 const UtilsTypography = Loadable(lazy(() => import('views/utilities/Typography')));
@@ -25,14 +29,30 @@ const MainRoutes = {
     children: [
         {
             path: '/',
-            element: <DashboardDefault />
+            element: <Home />
+        },
+        {
+            path: '/admin-dashboard',
+            element: <AdminDashboard />
+        },
+        {
+            path: '/admin-dashboard/users',
+            element: <UserDetails />
+        },
+        {
+            path: '/about-us',
+            element: <AboutUs />
+        },
+        {
+            path: '/404',
+            element: <FourOhFour />
         },
         {
             path: 'dashboard',
             children: [
                 {
                     path: 'default',
-                    element: <DashboardDefault />
+                    element: <Home />
                 }
             ]
         },

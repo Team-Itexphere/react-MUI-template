@@ -14,6 +14,7 @@ import Customization from '../Customization';
 import navigation from 'menu-items';
 import { drawerWidth } from 'store/constant';
 import { SET_MENU } from 'store/actions';
+import config from 'config';
 
 // assets
 import { IconChevronRight } from '@tabler/icons';
@@ -100,7 +101,7 @@ const MainLayout = () => {
             </AppBar>
 
             {/* drawer */}
-            <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} />
+            {config?.isSidebar && <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} />}
 
             {/* main content */}
             <Main theme={theme} open={leftDrawerOpened}>
