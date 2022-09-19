@@ -5,7 +5,7 @@ import { useState } from 'react';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import GenericInput from 'ui-component/components/input/genericInput';
-import Footer from 'ui-component/footer';
+import Footer from 'views/footer';
 
 const Home = () => {
 const [name, setName] = useState('')

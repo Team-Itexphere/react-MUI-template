@@ -8,7 +8,7 @@ import Loadable from 'ui-component/Loadable';
 const Home = Loadable(lazy(() => import('views/home/home.screen')));
 const AdminDashboard = Loadable(lazy(() => import('views/admin-dashboard')));
 const UserDetails = Loadable(lazy(() => import('views/admin-dashboard/users-details/UserDetails')));
-const AboutUs = Loadable(lazy(() => import('ui-component/footer/footer-components/about-us/AboutUs')));
+const AboutUs = Loadable(lazy(() => import('views/footer/footer-components/about-us/AboutUs')));
 const FourOhFour = Loadable(lazy(() => import('views/utilities/404')));
 
 // utilities routing
